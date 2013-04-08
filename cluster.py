@@ -1,16 +1,25 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Non-Euclidean clustering for small collections of strings 
+Hierarchical clustering for small collections of strings 
 
-Kevin Driscoll, 2013, kedrisco@usc.edu
+Strings are transformed into sets of k-shingles and 
+clustered in non-Euclidean space according to Jaccard distances.
 
-Reference: 
-Rajaraman, A. & Ullman, J. D. (2011). Mining of Massive Datasets. Cambridge University Press.
+Copyright 2013 Kevin Driscoll kedrisco@usc.edu
 
-TODO Next steps
-* Normalize for strings of very different lengths (e.g., blog comments and tweets)
-* Pass in function as stop condition 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
