@@ -13,7 +13,7 @@ Example
 
 The file *joc_titles_since_2003.txt* contains the titles of 633 articles published in the Journal of Communication since 2003. The following command will transform the titles into 2-shingles and iteratively cluster the sets of shingles until any cluster reaches a diameter of 0.9. 
 
-        $ python cluster.py -d 0.9 -k 2 -o joc_titles_since_2003.txt
+        $ python cluster.py -d 0.9 -k 2 -o joc joc_titles_since_2003.txt
 
 This will output two CSV files: one with clusters as rows and one with cluster members as rows.
 
