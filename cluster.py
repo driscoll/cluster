@@ -9,6 +9,7 @@ Reference:
 Rajaraman, A. & Ullman, J. D. (2011). Mining of Massive Datasets. Cambridge University Press.
 
 TODO Next steps
+* Normalize for strings of very different lengths (e.g., blog comments and tweets)
 * Pass in function as stop condition 
 
 """
@@ -24,7 +25,6 @@ import itertools
 import multiprocessing
 import operator
 import optparse
-import pickle
 import re
 import sys
 
@@ -211,7 +211,6 @@ class SuperCluster:
         last_diameter = self.merge_nearest_clusters()
         while (last_diameter < self.max_diameter) and (len(self.distance_queue) > 0):
             last_diameter = self.merge_nearest_clusters()
-            sys.stderr.write('Last diameter: {0}\n'.format(str(last_diameter)))
         sys.stderr.write('Merging unclustered...\n')
         self.merge_unclustered()
 
@@ -236,7 +235,6 @@ class SuperCluster:
 
         # Remove all clusters from the distance queue that refer
         #   to any member of the new cluster 
-        start = time.time()
         """
         # TODO this is concise but very slow
         # About 10s with 4000 clusters on a fast quad-core machine
@@ -254,8 +252,6 @@ class SuperCluster:
                 if not id_b in cluster.members:
                     dq.append(entry)
         self.distance_queue[:] = dq
-
-        sys.stderr.write('Filtering members took: {0}s.\n'.format(str(time.time()-start)))
 
         # Re-order the performance queue
         heapq.heapify(self.distance_queue)
@@ -380,8 +376,8 @@ class SuperCluster:
 if __name__=="__main__":
 
     parser = optparse.OptionParser(usage="Usage: python %prog [options] INPUTFILE")
-    parser.add_option('-k', '--kshingles', help='Number of tokens to combine when shingling [default: %default]', dest='kshingles', action='store', type='int', default=KSHINGLES)
-    parser.add_option('-d', '--diameter', help='Maximum cluster diameter [maximum: 1, default: %default]', dest='diameter', action='store', type='float', default=MAX_DIAMETER)
+    parser.add_option('-k', '--kshingles', help='Number of tokens to combine when shingling [default: %default]', dest='kshingles', action='store', type='int')
+    parser.add_option('-d', '--diameter', help='Maximum cluster diameter [maximum: 1, default: %default]', dest='diameter', action='store', type='float')
     parser.add_option("--stopwords", help='Project-specific stopwords (separated by commas)', type='str', nargs=1, dest="stopwords")
     parser.add_option('-o', '--outfile', help='Prefix for the output files', dest='outfile', action='store', type='str')
     (options, args) = parser.parse_args()
@@ -407,11 +403,12 @@ if __name__=="__main__":
     else:
         OUTFILE = ''
 
+    sys.stderr.write('Reading strings into memory...\n')
     corpus = [] 
     for line in fileinput.input(args):
         corpus.append(line.strip())
 
-    sys.stderr.write('Assembling shingles from the corpus using multiprocessing...\n')
+    sys.stderr.write('Assembling shingles from the corpus...\n')
     with closing(multiprocessing.Pool()) as pool:
         if VERSION < (2, 7):
             # In <= Python 2.6, we can only send one arg to kshinglize
@@ -422,10 +419,6 @@ if __name__=="__main__":
 
     sys.stderr.write('Initializing supercluster...\n')
     supercluster = SuperCluster(shingles, MAX_DIAMETER)
-
-    sys.stderr.write('Exporting supercluster...\n')
-    fn = OUTFILE + "supercluster.pickle"
-    pickle.dump(supercluster, open(fn, 'wb'))
 
     sys.stderr.write('Exporting clusters CSV...\n')
     fn = OUTFILE + "clusters.csv"
