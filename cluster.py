@@ -237,6 +237,16 @@ class SuperCluster:
         # Remove all clusters from the distance queue that refer
         #   to any member of the new cluster 
         start = time.time()
+        """
+        # TODO this is concise but very slow
+        # About 10s with 4000 clusters on a fast quad-core machine
+        self.distance_queue[:] = itertools.ifilterfalse(
+                                    lambda x: set(x[1:]) & set(cluster.members), 
+                                    self.distance_queue
+                                 )
+        """
+        # TODO this is simple and faster
+        # But still ~4-5s with 4000 clusters on a fast quad-core machine
         dq = []
         for entry in self.distance_queue:
             jd, id_a, id_b = entry
@@ -244,15 +254,9 @@ class SuperCluster:
                 if not id_b in cluster.members:
                     dq.append(entry)
         self.distance_queue[:] = dq
-        """
-        # TODO Filtering is a major performance bottleneck
-        # Probably a way to map this?
-        self.distance_queue[:] = itertools.ifilterfalse(
-                                    lambda x: set(x[1:]) & set(cluster.members), 
-                                    self.distance_queue
-                                 )
-        """
+
         sys.stderr.write('Filtering members took: {0}s.\n'.format(str(time.time()-start)))
+
         # Re-order the performance queue
         heapq.heapify(self.distance_queue)
 
